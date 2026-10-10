@@ -38,7 +38,7 @@ const principles = [
 
 export function About() {
   return (
-    <section id="about" className="relative py-16 sm:py-24">
+    <section id="about" className="relative py-14 sm:py-20">
       <div className="container-page">
         <SectionHeading
           eyebrow="About"

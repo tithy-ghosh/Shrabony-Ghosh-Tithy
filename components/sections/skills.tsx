@@ -78,7 +78,7 @@ function MarqueeRow({
 
 export function Skills() {
   return (
-    <section id="skills" className="relative py-16 sm:py-24">
+    <section id="skills" className="relative py-14 sm:py-20">
       <div className="container-page">
         <SectionHeading
           eyebrow="Skills"

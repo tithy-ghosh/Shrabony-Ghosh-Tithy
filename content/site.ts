@@ -8,10 +8,16 @@ export const site = {
   heroLine:
     "I design and build interfaces that feel alive — smooth, fast, and pixel-perfect.",
   photoUrl: "/SGT.png",
-  resumeDownloadName: "Shrabony-Ghosh-Tithy-Frontend.pdf",
+  resumeDownloadName: "Shrabony-Ghosh-Tithy(Frontend).pdf",
   email: "sgt.tithy.717@gmail.com",
   availability: "Open to opportunities",
   resumeUrl: "/Shrabony-Ghosh-Tithy(Frontend).pdf",
+  roles: [
+    "Frontend Developer",
+    "React & Next.js Engineer",
+    "Fullstack Developer",
+    "TypeScript Enthusiast",
+  ],
   socials: [
     { label: "GitHub", url: "https://github.com/tithy-ghosh" },
     { label: "LinkedIn", url: "https://www.linkedin.com/in/shrabony-ghosh-tithy" },

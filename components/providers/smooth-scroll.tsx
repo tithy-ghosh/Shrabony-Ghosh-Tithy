@@ -7,6 +7,12 @@ type LenisRef = { current: Lenis | null };
 
 const LenisContext = createContext<LenisRef>({ current: null });
 
+/** Module-level handle for imperative scrolls outside React context. */
+let activeLenis: Lenis | null = null;
+export function getLenis() {
+  return activeLenis;
+}
+
 export function SmoothScroll({ children }: { children: React.ReactNode }) {
   const ref = useRef<Lenis | null>(null);
 
@@ -20,9 +26,11 @@ export function SmoothScroll({ children }: { children: React.ReactNode }) {
       touchMultiplier: 1.6,
     });
     ref.current = instance;
+    activeLenis = instance;
 
     return () => {
       ref.current = null;
+      activeLenis = null;
       instance.destroy();
     };
   }, []);

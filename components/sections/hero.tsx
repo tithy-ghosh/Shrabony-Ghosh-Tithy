@@ -3,7 +3,7 @@
 import type { ComponentType } from "react";
 import dynamic from "next/dynamic";
 import { motion } from "motion/react";
-import { ArrowDownRight, Download, Mail } from "lucide-react";
+import { ArrowDown, ArrowDownRight, Download, Mail } from "lucide-react";
 import { GithubIcon, LinkedinIcon, XIcon } from "@/components/ui/social-icons";
 import { site } from "@/content/site";
 import { marqueeSkills } from "@/content/skills";
@@ -38,12 +38,7 @@ const nameWords = site.name.split(" ");
 const firstName = nameWords[0];
 const restName = nameWords.slice(1).join(" ");
 
-const ROLES = [
-  "Frontend Developer",
-  "React & Next.js Engineer",
-  "Aspiring Fullstack Developer",
-  "TypeScript Enthusiast",
-];
+const ROLES: string[] = [...site.roles];
 
 export function Hero() {
   return (
@@ -86,7 +81,7 @@ export function Hero() {
         </motion.a>
         <motion.p
           variants={fadeUp}
-          className="font-mono text-md uppercase tracking-[0.35em] text-muted sm:text-sm"
+          className="font-mono text-base uppercase tracking-[0.35em] text-muted sm:text-sm"
         >
           {"// Hi, I'm"}
         </motion.p>
@@ -99,7 +94,7 @@ export function Hero() {
             <TextReveal text={firstName} />
           </span>
           {restName && (
-            <motion.span className="gradient-text block" variants={fadeIn}>
+            <motion.span className="gradient-text block animate-shine" variants={fadeIn}>
               {restName}
             </motion.span>
           )}
@@ -107,7 +102,7 @@ export function Hero() {
 
         <motion.p
           variants={fadeUp}
-          className="font-mono text-md text-accent sm:text-base"
+          className="font-mono text-base text-accent sm:text-base"
         >
           <span className="text-muted">{"// "}</span>
           <TypingText phrases={ROLES} />
@@ -152,9 +147,8 @@ export function Hero() {
       {/* bottom: stack marquee */}
       <div className="relative z-10 mt-8 shrink-0 border-y border-border bg-surface/40 backdrop-blur-sm">
         <div className="container-page flex items-center gap-6 py-4">
-          <span className="hidden shrink-0 items-center gap-2 font-mono text-xs uppercase tracking-[0.25em] text-muted md:flex">
+          <span className="hidden shrink-0 font-mono text-xs uppercase tracking-[0.25em] text-muted md:flex">
             Stack
-            <ArrowDownRight className="h-3.5 w-3.5 animate-bounce text-accent" />
           </span>
           <div className="marquee-track relative flex-1 overflow-hidden">
             <div className="animate-marquee flex w-max items-center gap-4">
@@ -171,6 +165,29 @@ export function Hero() {
           </div>
         </div>
       </div>
+
+      {/* scroll hint — sibling of the marquee so it isn't clipped */}
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 1.2, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+        className="absolute inset-x-0 bottom-24 z-10 hidden justify-center [@media(min-height:720px)]:flex"
+        aria-hidden
+      >
+        <a
+          href="#about"
+          className="group flex flex-col items-center gap-2 text-xs font-medium text-muted"
+        >
+          <span>Scroll to explore</span>
+          <motion.span
+            animate={{ y: [0, 4, 0] }}
+            transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
+            className="flex h-8 w-8 items-center justify-center rounded-full border border-border bg-surface/70 backdrop-blur transition-colors group-hover:border-accent"
+          >
+            <ArrowDown className="h-4 w-4" />
+          </motion.span>
+        </a>
+      </motion.div>
     </section>
   );
 }

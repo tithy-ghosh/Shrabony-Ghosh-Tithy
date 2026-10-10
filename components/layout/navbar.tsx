@@ -2,8 +2,9 @@
 
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { Moon, Sun } from "lucide-react";
+import { Moon, Sun, Search } from "lucide-react";
 import { site } from "@/content/site";
+import { OPEN_COMMAND_PALETTE_EVENT } from "@/components/layout/command-palette";
 import { useActiveSection } from "@/hooks/use-active-section";
 import { useIsClient } from "@/hooks/use-is-client";
 import { useMagnetic } from "@/hooks/use-magnetic";
@@ -14,6 +15,7 @@ const links = [
   { id: "about", label: "About" },
   { id: "skills", label: "Skills" },
   { id: "projects", label: "Projects" },
+  { id: "education", label: "Education" },
   { id: "experience", label: "Experience" },
   { id: "contact", label: "Contact" },
 ];
@@ -129,6 +131,17 @@ export function Navbar() {
 
           <div className="flex items-center gap-2">
             <button
+              aria-label="Open command palette"
+              onClick={() =>
+                window.dispatchEvent(new Event(OPEN_COMMAND_PALETTE_EVENT))
+              }
+              className="hidden h-9 items-center gap-2 rounded-full border border-border px-3 text-xs text-muted transition-colors hover:border-accent hover:text-foreground sm:flex"
+            >
+              <Search className="h-3.5 w-3.5" />
+              <span className="font-mono tracking-wide">⌘K</span>
+            </button>
+
+            <button
               aria-label="Toggle theme"
               onClick={toggleTheme}
               className="relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border border-border transition-colors hover:border-accent"
@@ -205,7 +218,7 @@ export function Navbar() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 16 }}
                 transition={{ delay: 0.36, duration: 0.4 }}
-                className="mt-8 w-fit rounded-full bg-accent px-6 py-3 text-sm font-medium text-white"
+                className="mt-8 w-fit rounded-full bg-accent px-6 py-3 text-sm font-medium text-accent-contrast"
               >
                 Download Resume
               </motion.a>

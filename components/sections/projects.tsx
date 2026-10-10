@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 
 export function Projects() {
   return (
-    <section id="projects" className="relative py-16 sm:py-24">
+    <section id="projects" className="relative py-14 sm:py-20">
       <div className="container-page">
         <SectionHeading
           eyebrow="Projects"
@@ -22,11 +22,15 @@ export function Projects() {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-60px" }}
-          className="grid gap-8 sm:grid-cols-2"
+          className="grid gap-6 sm:grid-cols-2 lg:gap-8"
         >
           {featuredProjects.map((project, i) => (
-            <motion.div key={project.slug} variants={fadeUp}>
-              <ProjectCard project={project} index={i} />
+            <motion.div
+              key={project.slug}
+              variants={fadeUp}
+              className={i === 0 ? "sm:col-span-2" : ""}
+            >
+              <ProjectCard project={project} index={i} large={i === 0} />
             </motion.div>
           ))}
         </motion.div>

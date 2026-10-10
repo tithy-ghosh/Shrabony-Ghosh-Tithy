@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { ViewTransition } from "react";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowUpRight } from "lucide-react";
 import { GithubIcon } from "@/components/ui/social-icons";
 import { getProject, projects } from "@/content/projects";
 import { ProjectCover } from "@/components/project/project-cover";
+import { LivePreview } from "@/components/project/live-preview";
+import { CodeBlock } from "@/components/project/code-block";
 import { TextReveal } from "@/components/effects/text-reveal";
 import { Reveal } from "@/components/effects/reveal";
 import { fadeUp } from "@/lib/variants";
@@ -73,7 +76,7 @@ export default async function ProjectPage({
                 href={project.links.live}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-white transition-shadow hover:shadow-[0_10px_34px_-8px_var(--accent-glow)]"
+                className="inline-flex items-center gap-2 rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-accent-contrast transition-shadow hover:shadow-[0_10px_34px_-8px_var(--accent-glow)]"
               >
                 Live site
                 <ArrowUpRight className="h-4 w-4" />
@@ -94,7 +97,13 @@ export default async function ProjectPage({
         </header>
 
         <Reveal variants={fadeUp}>
-          <ProjectCover project={project} index={index} className="mb-14" />
+          <ViewTransition
+            name={`project-${project.slug}`}
+            share="morph"
+            default="none"
+          >
+            <ProjectCover project={project} index={index} priority className="mb-14" />
+          </ViewTransition>
         </Reveal>
 
         {/* meta grid */}
@@ -120,6 +129,18 @@ export default async function ProjectPage({
             ))}
           </div>
         </Reveal>
+
+        {/* live preview */}
+        {project.links.live && (
+          <Reveal variants={fadeUp}>
+            <section className="mb-14">
+              <h2 className={sectionLabel}>See it live</h2>
+              <div className="mt-5">
+                <LivePreview url={project.links.live} title={project.title} />
+              </div>
+            </section>
+          </Reveal>
+        )}
 
         {/* problem */}
         <Reveal variants={fadeUp}>
@@ -149,6 +170,24 @@ export default async function ProjectPage({
             </ol>
           </section>
         </Reveal>
+
+        {/* snippets */}
+        {project.snippets && project.snippets.length > 0 && (
+          <Reveal variants={fadeUp}>
+            <section className="mb-14">
+              <h2 className={sectionLabel}>Inside the code</h2>
+              <div className="mt-5 space-y-4">
+                {project.snippets.map((snippet) => (
+                  <CodeBlock
+                    key={snippet.label}
+                    label={snippet.label}
+                    code={snippet.code}
+                  />
+                ))}
+              </div>
+            </section>
+          </Reveal>
+        )}
 
         {/* challenges */}
         {project.challenges && project.challenges.length > 0 && (

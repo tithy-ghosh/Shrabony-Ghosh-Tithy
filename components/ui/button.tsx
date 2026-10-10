@@ -23,7 +23,7 @@ type ButtonProps = {
 
 const variants: Record<Variant, string> = {
   primary:
-    "bg-accent text-white shadow-[0_8px_30px_-8px_var(--accent-glow)] hover:shadow-[0_10px_38px_-6px_var(--accent-glow)]",
+    "bg-accent text-accent-contrast shadow-[0_8px_30px_-8px_var(--accent-glow)] hover:shadow-[0_10px_38px_-6px_var(--accent-glow)]",
   outline:
     "border border-border bg-transparent hover:border-accent hover:text-accent",
   ghost: "bg-foreground text-background hover:opacity-90",

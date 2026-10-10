@@ -10,6 +10,8 @@ import { ScrollProgress } from "@/components/layout/scroll-progress";
 import { PageTransition } from "@/components/layout/page-transition";
 import { CustomCursor } from "@/components/effects/custom-cursor";
 import { KonamiEasterEgg } from "@/components/effects/konami";
+import { CommandPalette } from "@/components/layout/command-palette";
+import { Preloader, introInitScript } from "@/components/layout/preloader";
 
 const geistSans = Geist({
   variable: "--font-geist",
@@ -78,17 +80,20 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        <script dangerouslySetInnerHTML={{ __html: introInitScript }} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
       <body className="grain min-h-full bg-background text-foreground">
+        <Preloader />
         <SmoothScroll>
           <ThemeProvider>
             <ScrollProgress />
             <CustomCursor />
             <KonamiEasterEgg />
+            <CommandPalette />
             <Navbar />
             <main className="relative z-10">
               <PageTransition>{children}</PageTransition>

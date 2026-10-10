@@ -33,7 +33,7 @@ export function Contact() {
   }, [state]);
 
   return (
-    <section id="contact" className="relative py-16 sm:py-24">
+    <section id="contact" className="relative py-14 sm:py-20">
       <div className="container-page">
         <SectionHeading
           eyebrow="Contact"
@@ -200,7 +200,7 @@ export function Contact() {
                     <button
                       type="submit"
                       disabled={pending}
-                      className="group mt-1 inline-flex items-center justify-center gap-2 rounded-full bg-accent px-6 py-3.5 text-sm font-semibold text-white shadow-[0_8px_30px_-8px_var(--accent-glow)] transition-all hover:shadow-[0_12px_38px_-6px_var(--accent-glow)] disabled:opacity-70"
+                      className="group mt-1 inline-flex items-center justify-center gap-2 rounded-full bg-accent px-6 py-3.5 text-sm font-semibold text-accent-contrast shadow-[0_8px_30px_-8px_var(--accent-glow)] transition-all hover:shadow-[0_12px_38px_-6px_var(--accent-glow)] disabled:opacity-70"
                     >
                       {pending ? (
                         <>

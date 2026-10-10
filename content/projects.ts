@@ -1,6 +1,7 @@
 export type Project = {
   slug: string;
   title: string;
+  tagline?: string;
   summary: string;
   year: string;
   role: string;
@@ -9,20 +10,24 @@ export type Project = {
   accent: "teal" | "copper" | "rose" | "emerald";
   image?: string;
   imageAlt?: string;
+  gallery?: string[];
   tech: string[];
   links: { live?: string; repo?: string };
   problem: string;
   approach: string[];
   challenges?: string[];
+  snippets?: { label: string; language?: string; code: string }[];
   results?: { metric: string; label: string }[];
 };
 
 export const projects: Project[] = [
   {
     slug: "github-profile-analyzer",
-    title: "Github Profile Analyzer",
+    title: "GitHub Profile Analyzer",
+    tagline:
+      "Turn any GitHub username into language, star, and activity charts — with side-by-side profile compare.",
     summary:
-      "**GitHub Profile Analyzer** is a React-based web app that turns any GitHub username into a clear visual overview of repositories, top languages, stars, and activity using the GitHub REST API and Recharts. It features side-by-side profile comparison, search history, and shareable profile links, with error handling for invalid usernames and API limitations. I built and deployed it on Netlify to help developers quickly understand and compare GitHub profiles at a glance.",
+      "A React app that turns any GitHub username into a clear visual overview of repositories, top languages, stars, and activity using the GitHub REST API and Recharts. It supports side-by-side profile comparison, search history, and shareable links, with graceful handling of invalid usernames and API limits. Built and deployed on Netlify.",
     year: "2026",
     role: "Fullstack Developer",
     duration: "10 days",
@@ -31,49 +36,99 @@ export const projects: Project[] = [
     image: "/projects/github-profile-analyzer.webp",
     imageAlt:
       "Github Profile Analyzer — search and compare GitHub profiles with language and star charts",
-    tech: ["React", "Recharts", "RestAPi"],
+    tech: ["React", "Recharts", "REST API", "Netlify"],
     links: {
       live: "https://github-profile-analyze-2.netlify.app/",
       repo: "https://github.com/tithy-ghosh/github-profile-analyzer",
     },
     problem:
-      "One of the main challenges was handling incomplete or inconsistent GitHub data, such as users with no public repositories, missing bios, or limited profile information, which required proper empty states and error handling. Another challenge was calculating language usage and star statistics because the GitHub API doesn't provide all the required totals directly, so I had to fetch repository data and aggregate the values myself for the charts. The compare mode was also challenging because it required managing two profiles, including their individual loading, data, and error states, without one profile affecting the other.",
+      "The GitHub API returns incomplete or inconsistent data — users with no public repositories, missing bios, or limited profile info — and it doesn't expose language or star totals directly. Compare mode added another layer: two profiles with independent loading, data, and error states that couldn't interfere with each other.",
     approach: [
-     "I added fallbacks and empty states to handle missing profile data, processed repository data on the client to calculate language and star totals, and kept each profile’s loading and error states independent in compare mode. This ensured that incomplete data or a failed request for one profile wouldn’t affect the other."
-    ]
+      "I added fallbacks and empty states for missing data, then aggregated repository data on the client to calculate language and star totals for the charts.",
+      "In compare mode I kept each profile's loading and error state independent, so a failed request for one profile never broke the other.",
+    ],
+    challenges: [
+      "Incomplete GitHub data (missing bios, zero repositories) demanded real empty states instead of crashes.",
+      "The API omits language/star totals, so I aggregated repositories client-side to build the charts.",
+    ],
+    results: [
+      { metric: "2", label: "Profiles compared side-by-side" },
+      { metric: "100%", label: "Client-side data aggregation" },
+      { metric: "Live", label: "Deployed on Netlify" },
+    ],
+    snippets: [
+      {
+        label: "aggregate.ts",
+        language: "ts",
+        code: `const languageTotals = repos.reduce<Record<string, number>>(
+  (acc, repo) => {
+    const lang = repo.language ?? "Other";
+    acc[lang] = (acc[lang] ?? 0) + 1;
+    return acc;
+  },
+  {},
+);`,
+      },
+    ],
   },
   {
     slug: "vault-manager",
     title: "Vault Manager",
+    tagline:
+      "A local-first credential vault — store, search, edit, and delete secrets with everything encrypted on-device.",
     summary:
-      "**Vault Manager** is a React-based credential management app that allows users to securely store, search, edit, and delete saved credentials in one place. I built it while learning React to strengthen my understanding of component-based architecture, state management, form handling, and CRUD operations, while focusing on creating a clean and easy-to-use interface.",
+      "A React credential manager for securely storing, searching, editing, and deleting saved credentials in one place. I built it while learning React to deepen my understanding of component architecture, state management, and CRUD operations, with passwords masked by default and everything kept on-device.",
     year: "2026",
     role: "Frontend Developer",
-    duration: "15days",
+    duration: "15 days",
     featured: true,
     accent: "emerald",
     image: "/projects/vault-manager.webp",
     imageAlt:
       "Vault Manager — encrypted credential vault with a master password unlock screen",
-    tech: ["React", "Tailwind CSS", "Browser Encryption", "Local-Storage"],
+    tech: ["React", "Tailwind CSS", "Browser Encryption", "LocalStorage"],
     links: {
       live: "https://vault-manager-2.vercel.app/",
       repo: "https://github.com/tithy-ghosh/Vault-Manager",
     },
     problem:
-      "One of the main challenges was persisting saved credentials across page refreshes, which I solved by storing the data in `localStorage` and keeping it synchronized with React state. I also had to consider how sensitive information should be handled by masking passwords in the UI and exploring safer storage approaches such as encryption. Managing CRUD operations required careful immutable state updates and unique IDs to ensure that editing or deleting one entry didn't affect others. I also implemented per-entry password visibility toggling and clipboard copy functionality for quick and controlled access to saved credentials.",
+      "I needed credentials to survive page refreshes without a backend, and to keep sensitive values out of plain sight in the UI. Managing CRUD also required careful immutable state updates and unique IDs so that editing or deleting one entry never affected the others.",
     approach: [
-      "I stored credentials in `localStorage` and kept them synchronized with React state, loading saved data on startup and updating storage whenever an entry changed so data persisted across refreshes. Passwords were masked by default in the UI, while encryption was considered as a safer approach for protecting sensitive data. For CRUD operations, I assigned each entry a unique ID and used immutable updates with `map`, `filter`, and the spread operator to ensure edits or deletions only affected the intended entry. I also managed password visibility independently for each entry and used the Clipboard API to provide quick and convenient copying."
+      "I persisted credentials in localStorage and kept them synchronized with React state, loading saved data on startup and writing back on every change so nothing was lost across refreshes.",
+      "Each entry gets a unique ID and is updated immutably with map, filter, and spread, so edits and deletions only touch the intended entry. Passwords stay masked by default with per-entry visibility toggles and Clipboard API copy.",
+    ],
+    challenges: [
+      "Persisting secrets across refreshes without a server — solved with localStorage kept in sync with React state.",
+      "Keeping CRUD updates immutable so editing one entry never touched another.",
+    ],
+    results: [
+      { metric: "Local", label: "Encrypted on-device, no server" },
+      { metric: "CRUD", label: "Create, edit, search & delete" },
+      { metric: "Live", label: "Deployed on Vercel" },
+    ],
+    snippets: [
+      {
+        label: "VaultContext.tsx",
+        language: "tsx",
+        code: `const updateEntry = (id: string, patch: Partial<Entry>) =>
+  setEntries((prev) =>
+    prev.map((entry) =>
+      entry.id === id ? { ...entry, ...patch } : entry,
+    ),
+  );`,
+      },
     ],
   },
   {
     slug: "resume.ai",
     title: "Rezume.AI",
+    tagline:
+      "AI interview prep that generates role-specific questions and ATS-ready resumes, loading answers on demand.",
     summary:
-      "Rezume.AI is an AI-powered interview preparation platform built with Next.js 14, TypeScript, Google Gemini, and Tailwind CSS that generates role-specific interview questions and loads AI-generated answers on demand to reduce unnecessary API usage. It also includes ATS-optimized resume generation with PDF and TXT export, user authentication, and protected routes, and is deployed on Vercel.",
+      "An AI-powered interview preparation platform built with Next.js, TypeScript, Google Gemini, and Tailwind CSS. It generates role-specific interview questions and loads AI answers on demand to reduce unnecessary API usage, and includes ATS-optimized resume generation with PDF and TXT export, authentication, and protected routes. Deployed on Vercel.",
     year: "2026",
     role: "Fullstack Developer",
-    duration: "1 months",
+    duration: "1 month",
     featured: true,
     accent: "copper",
     image: "/projects/resume.ai.webp",
@@ -83,12 +138,32 @@ export const projects: Project[] = [
     links: {
       live: "https://resume-analyzer-with-ai-nine.vercel.app/",
       repo: "https://github.com/tithy-ghosh/Resume-Analyzer-With-AI",
-
     },
-    problem: "One of the main challenges was that generating all AI answers upfront made the app slow and consumed unnecessary Gemini API calls. Gemini also sometimes returned inconsistent or poorly structured responses, making it difficult to display the content reliably. Handling API rate limits and failed requests was another challenge, as errors could interrupt the user experience. Additionally, generating clean, ATS-friendly PDF and TXT resume exports while maintaining standard formatting and headings required several iterations.",
-    approach: ["I implemented lazy loading so AI-generated answers are only requested when users open a question, reducing unnecessary Gemini API calls and improving performance. To handle inconsistent AI responses, I refined the prompts and parsed the output into a structured JSON format before displaying it. I also added loading states, error handling, and retry options to handle API rate limits and failed requests without breaking the interface. For resume exports, I refined the PDF and TXT formatting with standard headings and simple layouts to improve ATS readability.",
+    problem:
+      "Generating every AI answer up front made the app slow and consumed unnecessary Gemini API calls. Gemini also returned inconsistent, poorly structured responses that were hard to display reliably, and API rate limits or failed requests could interrupt the user experience. Producing clean, ATS-friendly PDF and TXT exports took several iterations.",
+    approach: [
+      "I implemented lazy loading so answers are only requested when a user opens a question, cutting unnecessary Gemini calls. I refined the prompts and parse responses into structured JSON before rendering, with loading, error, and retry states for rate limits.",
+      "For exports, I refined the PDF and TXT formatting with standard headings and simple layouts to improve ATS readability.",
     ],
-  }
+    challenges: [
+      "Generating all answers upfront was slow and burned Gemini quota — answers now load only when a question is opened.",
+      "Gemini returned inconsistent structures, so I prompt for JSON and parse it before rendering.",
+    ],
+    results: [
+      { metric: "On-demand", label: "AI answers per question" },
+      { metric: "ATS", label: "PDF & TXT resume export" },
+      { metric: "Live", label: "Deployed on Vercel" },
+    ],
+    snippets: [
+      {
+        label: "generate-answer.ts",
+        language: "ts",
+        code: `// answers load only when a question card is opened
+const raw = await gemini.generateInterviewAnswer(question);
+const answer = JSON.parse(stripCodeFences(raw));`,
+      },
+    ],
+  },
 ];
 
 export function getProject(slug: string): Project | undefined {

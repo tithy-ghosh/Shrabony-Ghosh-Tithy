@@ -22,9 +22,8 @@ export const experiences: Experience[] = [
   },
 ];
 
-// Conservative placeholders — edit to match your real numbers.
 export const stats = [
   { value: 1, suffix: "+", label: "Years building" },
-  { value: 15, suffix: "+", label: "Projects shipped" },
-  { value: 99, suffix: "%", label: "Lighthouse target" },
+  { value: 15, suffix: "+", label: "Projects built" },
+  { value: 3, suffix: "", label: "Deep-dive case studies" },
 ];

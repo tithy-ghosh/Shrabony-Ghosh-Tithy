@@ -14,6 +14,7 @@
   --muted: #4f6360;
   --border-color: rgba(11, 26, 26, 0.12);
   --accent: #0f766e;
+  --accent-contrast: #ffffff;
   --accent-soft: rgba(15, 118, 110, 0.14);
   --accent-glow: rgba(15, 118, 110, 0.3);
   --accent-2: #c2410c;
@@ -36,6 +37,7 @@
   --muted: #8fa8a2;
   --border-color: rgba(230, 242, 239, 0.12);
   --accent: #2dd4bf;
+  --accent-contrast: #04120f;
   --accent-soft: rgba(45, 212, 191, 0.14);
   --accent-glow: rgba(45, 212, 191, 0.35);
   --accent-2: #fb923c;
@@ -55,6 +57,7 @@
   --color-muted: var(--muted);
   --color-border: var(--border-color);
   --color-accent: var(--accent);
+  --color-accent-contrast: var(--accent-contrast);
   --color-accent-soft: var(--accent-soft);
   --color-accent-2: var(--accent-2);
   --color-accent-2-soft: var(--accent-2-soft);
@@ -291,6 +294,15 @@ section[id] {
   }
 }
 
+@keyframes shine {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}
+
 /* konami easter egg — scoped to <main> so fixed UI keeps working */
 html.disco main {
   animation: disco-hue 4s linear infinite;
@@ -320,6 +332,11 @@ html.disco main {
   animation: rotate-slow 26s linear infinite;
 }
 
+.animate-shine {
+  background-size: 200% 100%;
+  animation: shine 3.8s linear infinite;
+}
+
 .marquee-track:hover .animate-marquee {
   animation-play-state: paused;
 }
@@ -338,9 +355,80 @@ html.disco main {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+
+  .animate-shine {
+    animation: none;
+    background-position: 0% 0;
+  }
 }
 
 
+
+/* ------------------------------------------------------- preloader */
+
+.preloader {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-100%);
+  transition:
+    opacity 0.5s ease,
+    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+html[data-intro="pending"] .preloader {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+html[data-intro="pending"] {
+  overflow: hidden;
+}
+
+/* ----------------------------------------------------- view transitions */
+
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-group(.morph) {
+    animation-duration: 450ms;
+  }
+
+  ::view-transition-image-pair(.morph) {
+    animation-name: via-blur;
+  }
+
+  @keyframes via-blur {
+    30% {
+      filter: blur(4px);
+    }
+  }
+}
+
+::view-transition-group(.morph) {
+  z-index: 30;
+}
+
+::view-transition {
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  ::view-transition-group(*) {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+  }
+}
+
+/* ------------------------------------------------------------ cursor */
+
+/* The branded cursor takes over on fine-pointer devices — hide the arrow. */
+@media (pointer: fine) {
+  html.custom-cursor,
+  html.custom-cursor * {
+    cursor: none !important;
+  }
+}
 
 ::-webkit-scrollbar {
   width: 10px;
