@@ -37,6 +37,17 @@ export const metadata: Metadata = {
     template: `%s — ${site.name}`,
   },
   description: site.tagline,
+  icons: {
+    icon: [
+      { url: "/icon-light.png", type: "image/png", sizes: "512x512" },
+      {
+        url: "/icon-dark.png",
+        type: "image/png",
+        sizes: "512x512",
+        media: "(prefers-color-scheme: dark)",
+      },
+    ],
+  },
   keywords: [
     site.title,
     "Fullstack Developer",

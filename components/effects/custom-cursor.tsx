@@ -1,38 +1,72 @@
 "use client";
 
-import { motion, useMotionValue, useSpring } from "motion/react";
-import { useEffect, useState } from "react";
+import { motion, useMotionValue } from "motion/react";
+import { useEffect, useRef, useState } from "react";
 import { useIsTouchDevice } from "@/hooks/use-media-query";
 
-const SELECTOR = "a, button, [role='button'], input, textarea, [data-cursor]";
+const SELECTOR = "a, button, [role='button'], [data-cursor]";
+const PAD = 6;
 
 type Mode = "default" | "link" | "view" | "text";
+type Box = { x: number; y: number; w: number; h: number };
 
 /**
- * Branded HUD cursor: a precise accent dot, a spring-tracked reticle with
- * crosshair ticks, and a slower trailing echo ring. Replaces the native cursor
- * on fine-pointer devices (class `custom-cursor` on <html> hides the arrow).
+ * "Inspect" cursor — a developer-tools style pointer. A crosshair rides the
+ * pointer while a highlight box springs around the element under it, tagged
+ * with a monospace readout of the element's tag and size (e.g. `<a> 128×32`).
+ * Falls back to an I-beam over text fields. Replaces the native cursor on
+ * fine-pointer devices (class `custom-cursor` hides the arrow).
  */
 export function CustomCursor() {
   const isTouch = useIsTouchDevice();
   const [visible, setVisible] = useState(false);
   const [mode, setMode] = useState<Mode>("default");
-  const [label, setLabel] = useState("View");
   const [pressed, setPressed] = useState(false);
+  const [box, setBox] = useState<Box | null>(null);
+  const [info, setInfo] = useState("");
 
   const x = useMotionValue(-100);
   const y = useMotionValue(-100);
-
-  const ringX = useSpring(x, { stiffness: 320, damping: 27, mass: 0.5 });
-  const ringY = useSpring(y, { stiffness: 320, damping: 27, mass: 0.5 });
-  const echoX = useSpring(x, { stiffness: 130, damping: 20, mass: 0.9 });
-  const echoY = useSpring(y, { stiffness: 130, damping: 20, mass: 0.9 });
+  const targetRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     if (isTouch) return;
 
     const root = document.documentElement;
     root.classList.add("custom-cursor");
+
+    const pick = (el: HTMLElement | null): HTMLElement | null => {
+      if (!el) return null;
+      const interactive = el.closest?.(SELECTOR) as HTMLElement | null;
+      if (interactive) return interactive;
+
+      let node: HTMLElement | null = el;
+      while (node && node !== document.body) {
+        const r = node.getBoundingClientRect();
+        if (
+          r.width > 0 &&
+          r.height > 0 &&
+          r.height < window.innerHeight * 0.7 &&
+          r.width < window.innerWidth * 0.85
+        ) {
+          return node;
+        }
+        node = node.parentElement;
+      }
+      return null;
+    };
+
+    const measure = () => {
+      const t = targetRef.current;
+      if (!t) return;
+      const r = t.getBoundingClientRect();
+      setBox({
+        x: r.left - PAD,
+        y: r.top - PAD,
+        w: r.width + PAD * 2,
+        h: r.height + PAD * 2,
+      });
+    };
 
     const onMove = (e: PointerEvent) => {
       x.set(e.clientX);
@@ -47,30 +81,43 @@ export function CustomCursor() {
           el.isContentEditable)
       ) {
         setMode("text");
+        targetRef.current = null;
+        setBox(null);
         return;
       }
 
-      const target = el?.closest?.(SELECTOR) as HTMLElement | null;
+      const target = pick(el);
+      if (target === targetRef.current) return;
+      targetRef.current = target;
+
       if (target) {
         const custom = target.dataset.cursor;
-        if (custom === "view") {
-          setMode("view");
-          setLabel(target.dataset.cursorLabel ?? "View");
-        } else {
-          setMode("link");
-        }
+        setMode(custom === "view" ? "view" : "link");
+        const r = target.getBoundingClientRect();
+        setInfo(
+          `<${target.tagName.toLowerCase()}> ${Math.round(r.width)}×${Math.round(r.height)}`,
+        );
+        measure();
       } else {
         setMode("default");
+        setBox(null);
       }
     };
 
     const onDown = () => setPressed(true);
     const onUp = () => setPressed(false);
-    const onLeave = () => setVisible(false);
+    const onLeave = () => {
+      setVisible(false);
+      setBox(null);
+      targetRef.current = null;
+    };
+    const onScrollResize = () => measure();
 
     window.addEventListener("pointermove", onMove, { passive: true });
     window.addEventListener("pointerdown", onDown, { passive: true });
     window.addEventListener("pointerup", onUp, { passive: true });
+    window.addEventListener("scroll", onScrollResize, { passive: true });
+    window.addEventListener("resize", onScrollResize, { passive: true });
     document.addEventListener("pointerleave", onLeave);
 
     return () => {
@@ -78,67 +125,64 @@ export function CustomCursor() {
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("pointerdown", onDown);
       window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("scroll", onScrollResize);
+      window.removeEventListener("resize", onScrollResize);
       document.removeEventListener("pointerleave", onLeave);
     };
   }, [isTouch, x, y]);
 
   if (isTouch) return null;
 
-  const isLink = mode === "link";
-  const isView = mode === "view";
   const isText = mode === "text";
-  const showReticle = visible && !isText;
+  const showPointer = visible && !isText;
 
   return (
     <div
       aria-hidden
       className="pointer-events-none fixed inset-0 z-[70] hidden md:block"
     >
-      {/* trailing echo ring */}
+      {/* highlight box around the inspected element */}
       <motion.div
-        style={{ x: echoX, y: echoY }}
+        initial={false}
         animate={{
-          opacity: showReticle ? 0.35 : 0,
-          scale: isView ? 1.7 : isLink ? 1.15 : 1,
+          x: box ? box.x : 0,
+          y: box ? box.y : 0,
+          width: box ? box.w : 0,
+          height: box ? box.h : 0,
+          opacity: box && visible ? 1 : 0,
         }}
-        transition={{ type: "spring", stiffness: 200, damping: 22 }}
-        className="absolute -left-3 -top-3 h-6 w-6 rounded-full border border-accent/70"
-      />
-
-      {/* spring-tracked reticle with crosshair ticks */}
-      <motion.div
-        style={{ x: ringX, y: ringY }}
-        animate={{
-          opacity: showReticle ? 1 : 0,
-          scale: pressed ? 0.82 : isView ? 2.8 : isLink ? 1.5 : 1,
-        }}
-        transition={{ type: "spring", stiffness: 340, damping: 24 }}
-        className="absolute -left-5 -top-5 flex h-10 w-10 items-center justify-center rounded-full border border-accent/80 bg-accent/5 backdrop-blur-[1px]"
+        transition={{ type: "spring", stiffness: 300, damping: 32, mass: 0.6 }}
+        className="absolute left-0 top-0 rounded-sm border border-accent/70 bg-accent/10 shadow-[0_0_16px_-2px_var(--accent-glow)]"
       >
-        <span className="absolute -top-1.5 h-1.5 w-px bg-accent/80" />
-        <span className="absolute -bottom-1.5 h-1.5 w-px bg-accent/80" />
-        <span className="absolute -left-1.5 h-px w-1.5 bg-accent/80" />
-        <span className="absolute -right-1.5 h-px w-1.5 bg-accent/80" />
-        <motion.span
-          animate={{ opacity: isView ? 1 : 0 }}
-          className="whitespace-nowrap text-[7px] font-semibold uppercase tracking-widest text-accent"
-        >
-          {label}
-        </motion.span>
+        <span className="absolute -left-px -top-px h-1.5 w-1.5 border-l border-t border-accent" />
+        <span className="absolute -right-px -top-px h-1.5 w-1.5 border-r border-t border-accent" />
+        <span className="absolute -bottom-px -left-px h-1.5 w-1.5 border-b border-l border-accent" />
+        <span className="absolute -bottom-px -right-px h-1.5 w-1.5 border-b border-r border-accent" />
+        <span className="absolute -top-5 left-0 whitespace-nowrap rounded-sm bg-accent px-1.5 py-px font-mono text-[10px] font-medium leading-4 text-accent-contrast">
+          {info}
+        </span>
       </motion.div>
 
-      {/* precise center dot */}
+      {/* crosshair at the pointer */}
       <motion.div
         style={{ x, y }}
         animate={{
-          opacity: showReticle ? 1 : 0,
-          scale: isView ? 0 : 1,
+          opacity: showPointer ? 1 : 0,
+          scale: pressed ? 0.8 : mode === "link" ? 1.15 : 1,
         }}
-        transition={{ duration: 0.15 }}
-        className="absolute -left-1 -top-1 h-2 w-2 rounded-full bg-accent shadow-[0_0_10px_var(--accent-glow)]"
-      />
+        transition={{ type: "spring", stiffness: 520, damping: 30, mass: 0.4 }}
+        className="absolute left-0 top-0"
+      >
+        <div className="relative h-4 w-4 -translate-x-1/2 -translate-y-1/2 drop-shadow-[0_0_4px_var(--accent-glow)]">
+          <span className="absolute left-1/2 top-0 h-1.5 w-px -translate-x-1/2 bg-accent" />
+          <span className="absolute bottom-0 left-1/2 h-1.5 w-px -translate-x-1/2 bg-accent" />
+          <span className="absolute left-0 top-1/2 h-px w-1.5 -translate-y-1/2 bg-accent" />
+          <span className="absolute right-0 top-1/2 h-px w-1.5 -translate-y-1/2 bg-accent" />
+          <span className="absolute left-1/2 top-1/2 h-1 w-1 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent shadow-[0_0_8px_var(--accent-glow)]" />
+        </div>
+      </motion.div>
 
-      {/* text caret for inputs */}
+      {/* I-beam for text inputs */}
       <motion.div
         style={{ x, y }}
         animate={{

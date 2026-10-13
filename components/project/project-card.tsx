@@ -21,20 +21,24 @@ export function ProjectCard({
 }) {
   return (
     <TiltCard className="h-full">
-      <Link
-        href={`/projects/${project.slug}`}
-        data-cursor="view"
-        data-cursor-label="View"
+      <div
         className={cn(
-          "group flex h-full",
+          "group relative flex h-full",
           large
             ? "flex-col gap-6 md:flex-row md:items-center md:gap-8"
             : "flex-col gap-4",
         )}
       >
+        <Link
+          href={`/projects/${project.slug}`}
+          data-cursor="view"
+          data-cursor-label="View"
+          aria-label={`View ${project.title} case study`}
+          className="absolute inset-0 z-0 rounded-[inherit]"
+        />
         <div
           className={cn(
-            "relative transition-transform duration-500 group-hover:-translate-y-1",
+            "relative z-10 transition-transform duration-500 group-hover:-translate-y-1",
             large && "md:w-[55%] md:shrink-0",
           )}
         >
@@ -73,7 +77,7 @@ export function ProjectCard({
 
         <div
           className={cn(
-            "flex flex-1 flex-col gap-3",
+            "relative z-10 flex flex-1 flex-col gap-3",
             large && "md:py-2",
           )}
         >
@@ -130,7 +134,7 @@ export function ProjectCard({
             </span>
           )}
         </div>
-      </Link>
+      </div>
     </TiltCard>
   );
 }
